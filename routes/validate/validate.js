@@ -6,7 +6,7 @@ const schemaCreatContacts = Joi.object({
   phone: Joi.string().min(8).max(11).required(),
   email: Joi.string()
     .min(5)
-    .max(11)
+    .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
 });
@@ -16,7 +16,7 @@ const schemaUpdateContacts = Joi.object({
   phone: Joi.string().min(8).max(11).optional(),
   email: Joi.string()
     .min(5)
-    .max(11)
+    .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .optional(),
 });

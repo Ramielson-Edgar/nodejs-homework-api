@@ -6,55 +6,56 @@ const shortid = require("shortid");
 
 class ContactsRepositories {
   async listContacts() {
-    return await contacts
-      .then((data) => JSON.parse(data))
-      .catch((err) => err.message);
+    const allcontacts = await contacts;
+    const parse = JSON.parse(allcontacts);
+    return parse;
   }
 
   async getContactById(contactId) {
-    return await this.listContacts()
-      .then((contacts) => contacts.find((el) => String(el.id) === contactId))
-      .catch((error) => error.message);
+    const allcontacts = await this.listContacts();
+    const getId = allcontacts.find((el) => String(el.id) === contactId);
+    return getId;
   }
 
   async addContact(name, email, phone) {
-    const data = await this.listContacts()
-      .then((contact) => {
-        const id = shortid.generate();
-        const incomingData = { id, name, email, phone };
+    const allcontacts = await this.listContacts();
+    const incomingData = { id: shortid.generate(), name, email, phone };
 
-        const data = JSON.stringify([...contact, incomingData]);
-        fs.writeFile(contactPath, data, (err) => {
-          err && console.log(err.message);
-        });
-
-        return incomingData;
-      })
-      .catch((error) => error.message);
-
-    return data;
-  }
-
-  async removeContact(contactId) {
-    const list = await this.listContacts();
-    const remove = this.getContactById(contactId);
-    const contacts = list.filter(({ id }) => String(id) !== contactId);
-
-    const data = JSON.stringify(contacts);
+    const data = JSON.stringify([...allcontacts, incomingData]);
     fs.writeFile(contactPath, data, (err) => {
       err && console.log(err.message);
     });
 
-    return remove;
+    return incomingData;
+  }
+
+  async removeContact(contactId) {
+    const list = await this.listContacts();
+    const getContact = await this.getContactById(contactId);
+    const removeContactById = list.filter(({ id }) => String(id) !== contactId);
+
+    fs.writeFile(contactPath, JSON.stringify(getContact), (err) => {
+      err && console.log(err.message);
+    });
+
+    return removeContactById;
   }
 
   async updateContact(contactId, name, email, phone) {
     const list = await this.listContacts();
+    const contactById = await this.getContactById(contactId);
     const updater = { name, email, phone };
-    const updateContactlist = list.find(({ id }) => String(id) === contactId);
-    Object.assign(updateContactlist, updater);
-    await fs.writeFile(contactPath, JSON.stringify(list, null, "\t"));
-    return updateContactlist;
+    const updatedContact = Object.assign(contactById, updater);
+
+    const updateContactList = list.map((contact) => {
+      return String(contact.id) === contactId ? updatedContact : contact;
+    });
+
+    await fs.writeFile(
+      contactPath,
+      JSON.stringify(updateContactList, null, "\t")
+    );
+    return updatedContact;
   }
 }
 

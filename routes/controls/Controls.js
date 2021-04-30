@@ -20,6 +20,7 @@ const getListContacts = async (req, res, next) => {
 const getContactById = async (req, res, next) => {
   try {
     const response = await contactsServices.getById(req.params.contactId);
+
     if (response) {
       res.status(httpStatusCode.ok).json({
         status: "success",
@@ -44,14 +45,6 @@ const creat = async (req, res, next) => {
   try {
     const { name, email, phone } = req.body;
 
-    if (!name && !email && !phone) {
-      return res.status(httpStatusCode.BAD_REQUEST).json({
-        status: "Error",
-        code: httpStatusCode.BAD_REQUEST,
-        message: `missing required ${(name, email, phone)} field `,
-      });
-    }
-
     return contactsServices.creatContact(name, email, phone).then((data) => {
       res.status(httpStatusCode.CREATED).json({
         status: "success",
@@ -68,12 +61,6 @@ const updateContact = async (req, res, next) => {
   try {
     const { name, email, phone } = req.body;
     const { contactId } = req.params;
-
-    if (!(name, email, phone))
-      res.status(httpStatusCode.BAD_REQUEST).json({
-        code: httpStatusCode.BAD_REQUEST,
-        message: "missing fields",
-      });
 
     const response = await contactsServices.update(
       contactId,
