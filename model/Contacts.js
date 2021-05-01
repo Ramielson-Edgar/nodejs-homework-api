@@ -6,48 +6,53 @@ const shortid = require("shortid");
 
 class ContactsRepositories {
   async listContacts() {
-    const allcontacts = await contacts;
-    const parse = JSON.parse(allcontacts);
+    const allContacts = await contacts;
+    const parse = JSON.parse(allContacts);
     return parse;
   }
 
   async getContactById(contactId) {
-    const allcontacts = await this.listContacts();
-    const getId = allcontacts.find((el) => String(el.id) === contactId);
-    return getId;
+    const allContacts = await this.listContacts();
+    const contact = allContacts.find(({ id }) => String(id) === contactId);
+    return contact;
   }
 
   async addContact(name, email, phone) {
-    const allcontacts = await this.listContacts();
+    const allContacts = await this.listContacts();
     const incomingData = { id: shortid.generate(), name, email, phone };
 
-    const data = JSON.stringify([...allcontacts, incomingData]);
-    fs.writeFile(contactPath, data, (err) => {
-      err && console.log(err.message);
-    });
+    fs.writeFile(
+      contactPath,
+      JSON.stringify([...allContacts, incomingData]),
+      (err) => {
+        err && console.log(err.message);
+      }
+    );
 
     return incomingData;
   }
 
   async removeContact(contactId) {
-    const list = await this.listContacts();
-    const getContact = await this.getContactById(contactId);
-    const removeContactById = list.filter(({ id }) => String(id) !== contactId);
+    const allContacts = await this.listContacts();
+    const contact = await this.getContactById(contactId);
+    const newContacts = allContacts.filter(
+      ({ id }) => String(id) !== contactId
+    );
 
-    fs.writeFile(contactPath, JSON.stringify(getContact), (err) => {
+    fs.writeFile(contactPath, JSON.stringify(contact), (err) => {
       err && console.log(err.message);
     });
 
-    return removeContactById;
+    return newContacts;
   }
 
   async updateContact(contactId, name, email, phone) {
-    const list = await this.listContacts();
-    const contactById = await this.getContactById(contactId);
+    const allContacts = await this.listContacts();
+    const contact = await this.getContactById(contactId);
     const updater = { name, email, phone };
-    const updatedContact = Object.assign(contactById, updater);
+    const updatedContact = Object.assign(contact, updater);
 
-    const updateContactList = list.map((contact) => {
+    const updateContactList = allContacts.map((contact) => {
       return String(contact.id) === contactId ? updatedContact : contact;
     });
 
