@@ -2,6 +2,7 @@ const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
 const boolParser = require("express-query-boolean");
+const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 
 const { httpStatusCode, messages } = require("./helpers/constants");
@@ -15,6 +16,20 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(helmet());
 app.use(logger(formatsLogger));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  handler: (req, res, next) => {
+    res.status(httpStatusCode.TOO_MANY_REQUESTS).json({
+      status: messages.ERROR,
+      code: httpStatusCode.TOO_MANY_REQUESTS,
+      message: messages.TOO_MANY_REQUEST,
+    });
+  },
+});
+
+app.use(limiter);
 app.use(
   cors({
     origin: "*",

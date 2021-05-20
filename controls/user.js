@@ -52,6 +52,7 @@ const registration = async (req, res, next) => {
 
   try {
     const user = await userRepositories.create(req.body);
+
     return res.status(httpStatusCode.CREATED).json({
       status: messages.SUCCESS_CREATED,
       code: httpStatusCode.CREATED,
@@ -75,6 +76,7 @@ const logout = async (req, res, next) => {
 const current = async (req, res, next) => {
   try {
     const user = await userRepositories.findById(req.user.id);
+
     if (user) {
       return res.status(httpStatusCode.ok).json({
         status: messages.SUCCESS,

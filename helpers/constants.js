@@ -7,6 +7,7 @@ const httpStatusCode = {
   INTERNAL_SERVER_ERROR: 500,
   CONFLICT: 409,
   UNAUTHORIZATION: 401,
+  TOO_MANY_REQUESTS: 429,
 };
 
 const signature = {
@@ -33,6 +34,7 @@ const messages = {
   SET_CONTACT_NAME: "Set name for contact",
   PASSWORD_IS_REQUIRE: "Password is required",
   EMAIL_IS_REQUIRE: "Email is required",
+  TOO_MANY_REQUEST: "Too many requests, please try again",
 };
 
 const connection = {

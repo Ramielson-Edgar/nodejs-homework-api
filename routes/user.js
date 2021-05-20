@@ -7,8 +7,9 @@ const {
   validateLogin,
 } = require("./validate/user");
 const guard = require("../helpers/guard");
+const limiter = require("../helpers/Limit");
 
-router.post("/signup", validateCreat, crtl.registration);
+router.post("/signup", limiter, validateCreat, crtl.registration);
 router.post("/login", validateLogin, crtl.login);
 router.post("/logout", guard, crtl.logout);
 router.get("/current", guard, crtl.current);
