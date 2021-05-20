@@ -1,12 +1,14 @@
-const { httpStatusCode } = require("../helpers/statusCode");
+const { httpStatusCode, messages } = require("../helpers/constants");
 const { ContactsServices } = require("../services");
 const contactsServices = new ContactsServices();
+const wrap = require("../helpers/handleError");
 
-const getListContacts = async (req, res, next) => {
+const getListContacts = wrap(async (req, res, next) => {
   try {
-    const list = await contactsServices.getContacts();
+    const userId = req.user.id;
+    const list = await contactsServices.getContacts(userId, req.query);
     return res.status(httpStatusCode.ok).json({
-      status: "success",
+      status: messages.SUCCESS,
       code: httpStatusCode.ok,
       data: {
         list,
@@ -15,15 +17,20 @@ const getListContacts = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-};
+});
 
 const getContactById = async (req, res, next) => {
   try {
-    const response = await contactsServices.getById(req.params.contactId);
+    const userId = req.user.id;
+    console.log(userId);
 
+    const response = await contactsServices.getById(
+      userId,
+      req.params.contactId
+    );
     if (response) {
       res.status(httpStatusCode.ok).json({
-        status: "success",
+        status: messages.SUCCESS,
         code: httpStatusCode.ok,
         data: {
           ...response,
@@ -31,9 +38,9 @@ const getContactById = async (req, res, next) => {
       });
     } else {
       res.status(httpStatusCode.NOT_FOUND).json({
-        status: "Error",
+        status: messages.ERROR,
         code: httpStatusCode.NOT_FOUND,
-        message: "Not Found",
+        message: messages.NOT_FOUND,
       });
     }
   } catch (e) {
@@ -43,12 +50,12 @@ const getContactById = async (req, res, next) => {
 
 const creat = async (req, res, next) => {
   try {
-    return contactsServices.creatContact(req.body).then((data) => {
-      res.status(httpStatusCode.CREATED).json({
-        status: "success",
-        code: httpStatusCode.CREATED,
-        data: { data },
-      });
+    const userId = req.user.id;
+    const response = await contactsServices.creatContact(userId, req.body);
+    return res.status(httpStatusCode.CREATED).json({
+      status: messages.SUCCESS,
+      code: httpStatusCode.CREATED,
+      data: { response },
     });
   } catch (e) {
     next(e);
@@ -57,23 +64,25 @@ const creat = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const response = await contactsServices.update(
+      userId,
       req.params.contactId,
       req.body
     );
 
     if (response) {
       return res.status(httpStatusCode.ok).json({
-        status: "Update success",
+        status: messages.SUCCESS,
         code: httpStatusCode.ok,
         data: { response },
       });
     }
 
     res.status(httpStatusCode.BAD_REQUEST).json({
-      status: "Error",
+      status: messages.ERROR,
       code: httpStatusCode.BAD_REQUEST,
-      message: "Not found",
+      message: messages.NOT_FOUND,
     });
   } catch (e) {
     next(e);
@@ -82,22 +91,25 @@ const updateContact = async (req, res, next) => {
 
 const removeContact = async (req, res, next) => {
   try {
-    return await contactsServices.remove(req.params.contactId).then((data) => {
-      if (data) {
-        res.status(httpStatusCode.ok).json({
-          status: "success",
-          code: httpStatusCode.ok,
-          message: "contact deleted",
-          data: { data },
-        });
-      } else {
-        return res.status(httpStatusCode.NOT_FOUND).json({
-          status: "Error",
-          code: httpStatusCode.NOT_FOUND,
-          message: "Not Found",
-        });
-      }
-    });
+    const userId = req.user.id;
+    return await contactsServices
+      .remove(userId, req.params.contactId)
+      .then((data) => {
+        if (data) {
+          res.status(httpStatusCode.ok).json({
+            status: messages.SUCCESS,
+            code: httpStatusCode.ok,
+            message: messages.SUCCESS_DELETE,
+            data: { data },
+          });
+        } else {
+          return res.status(httpStatusCode.NOT_FOUND).json({
+            status: messages.ERROR,
+            code: httpStatusCode.NOT_FOUND,
+            message: messages.NOT_FOUND,
+          });
+        }
+      });
   } catch (e) {
     next(e);
   }
@@ -105,22 +117,24 @@ const removeContact = async (req, res, next) => {
 
 const updateStatusContact = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const response = await contactsServices.updateStatus(
+      userId,
       req.params.contactId,
       req.body
     );
 
     if (response) {
       return res.status(httpStatusCode.ok).json({
-        status: "Update success",
+        status: messages.SUCCESS,
         code: httpStatusCode.ok,
         data: { ...response },
       });
     } else {
       res.status(httpStatusCode.BAD_REQUEST).json({
-        status: "Error",
+        status: messages.ERROR,
         code: httpStatusCode.BAD_REQUEST,
-        message: "Not found",
+        message: messages.NOT_FOUND,
       });
     }
   } catch (e) {
@@ -136,11 +150,3 @@ module.exports = {
   removeContact,
   updateStatusContact,
 };
-
-//  if (req.body === null) {
-//    return res.status(httpStatusCode.BAD_REQUEST).json({
-//      status: "Error",
-//      code: httpStatusCode.BAD_REQUEST,
-//      message: "missing field favorite",
-//    });
-//  }

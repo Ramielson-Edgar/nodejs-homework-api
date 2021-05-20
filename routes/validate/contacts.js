@@ -1,11 +1,21 @@
 const Joi = require("joi");
-const { httpStatusCode } = require("../helpers/statusCode");
+const mongoose = require("mongoose");
+const { httpStatusCode, messages } = require("../../helpers/constants");
+
+const schemaQueryContacts = Joi.object({
+  sortBy: Joi.string().valid("name", "email", "phone", "id").optional(),
+  sortByDesc: Joi.string().valid("name", "email", "phone", "id").optional(),
+  filter: Joi.string().valid("favorite").optional(),
+  limit: Joi.number().min(1).max(20).optional(),
+  page: Joi.number().min(0).optional(),
+  favorite: Joi.boolean().optional(),
+}).without("sortBy", "sortByDesc");
 
 const schemaCreatContacts = Joi.object({
   name: Joi.string().min(10).max(20).required(),
   phone: Joi.string().min(8).max(11).required(),
   email: Joi.string()
-    .min(5)
+    .min(10)
     .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
@@ -16,7 +26,7 @@ const schemaUpdateContacts = Joi.object({
   name: Joi.string().min(10).max(20).optional(),
   phone: Joi.string().min(8).max(11).optional(),
   email: Joi.string()
-    .min(5)
+    .min(10)
     .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .optional(),
@@ -34,21 +44,35 @@ const validate = (shema, body, next) => {
     return next({
       status: httpStatusCode.BAD_REQUEST,
       code: httpStatusCode.BAD_REQUEST,
-      message: `Faild: ${message.replace(/"/g, "")}`,
-      data: "Bad Request",
+      message: `${messages.FAILD}: ${message.replace(/"/g, "")}`,
+      data: messages.BAD_REQUEST,
     });
   }
   next();
 };
 
-module.exports.validateCreat = (req, res, next) => {
+module.exports.validateQueryContacts = (req, _, next) => {
+  return validate(schemaQueryContacts, req.query, next);
+};
+
+module.exports.validateCreat = (req, _, next) => {
   return validate(schemaCreatContacts, req.body, next);
 };
 
-module.exports.validateUpdate = (req, res, next) => {
+module.exports.validateUpdate = (req, _, next) => {
   return validate(schemaUpdateContacts, req.body, next);
 };
 
-module.exports.validateUpdateStatus = (req, res, next) => {
+module.exports.validateUpdateStatus = (req, _, next) => {
   return validate(schemaUpdateContactsStatus, req.body, next);
+};
+
+module.exports.validateObjectId = (req, _, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.contactId)) {
+    return next({
+      status: httpStatusCode.BAD_REQUEST,
+      message: messages.INVALID_OBJECT_ID,
+    });
+  }
+  next();
 };

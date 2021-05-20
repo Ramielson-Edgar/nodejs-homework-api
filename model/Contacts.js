@@ -1,66 +1,68 @@
-const { getColletction } = require("../routes/helpers/statusCode");
-const db = require("./db/db");
-const { ObjectID } = require("mongodb");
+const Contact = require("./Shemas/contacts");
 
 class ContactsRepositories {
-  async listContacts() {
-    const colletction = await getColletction(db, "contacts");
-    const result = await colletction.find().toArray();
-    return result;
-  }
-
-  async getContactById(contactId) {
-    const colletction = await getColletction(db, "contacts");
-    const objectId = new ObjectID(contactId);
-    const [contact] = await colletction.find({ _id: objectId }).toArray();
-    return contact;
-  }
-
-  async addContact(body) {
-    const colletction = await getColletction(db, "contacts");
-    const incomingData = {
-      ...body,
-      ...(body.favorite ? {} : { favorite: false }),
-    };
+  async listContacts(userId, query) {
     const {
-      ops: [result],
-    } = await colletction.insertOne(incomingData);
-    return result;
-  }
+      sortBy,
+      sortByDesc,
+      filter,
+      limit = 5,
+      page = 0,
+      favorite = false,
+    } = query;
+    const searchParams = { owner: userId };
 
-  async removeContact(contactId) {
-    const colletction = await getColletction(db, "contacts");
-    const objectId = new ObjectID(contactId);
-    const { value: result } = await colletction.findOneAndDelete({
-      _id: objectId,
+    if (favorite !== null) searchParams.favorite = favorite;
+
+    return await Contact.paginate(searchParams, {
+      limit,
+      page,
+      filter,
+      favorite,
+      sort: {
+        ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
+        ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
+      },
+      select: filter ? filter.split("|").join(" ") : "",
+      populate: {
+        path: "owner",
+        select: "email subscription -_id",
+      },
     });
-    return result;
   }
 
-  async updateContact(contactId, body) {
-    const colletction = await getColletction(db, "contacts");
-    const objectId = new ObjectID(contactId);
+  async getContactById(userId, contactId) {
+    return await Contact.find({ _id: contactId, owner: userId }).populate({
+      path: "owner",
+      select: "email subscription -_id",
+    });
+  }
 
-    const { value: result } = await colletction.findOneAndUpdate(
-      { _id: objectId },
-      { $set: { ...body } },
-      { returnOriginal: false }
+  async addContact(userId, body) {
+    return await Contact.create({ ...body, owner: userId });
+  }
+
+  async removeContact(userId, contactId) {
+    return await Contact.findByIdAndRemove({
+      _id: contactId,
+      owner: userId,
+    });
+  }
+
+  async updateContact(userId, contactId, body) {
+    return await Contact.findOneAndUpdate(
+      { _id: contactId, owner: userId },
+      { ...body },
+      { new: true }
     );
-
-    return result;
   }
 
   async updateStatusContact(contactId, body) {
-    const colletction = await getColletction(db, "contacts");
-    const objectId = new ObjectID(contactId);
-
-    const { value: result } = await colletction.findOneAndUpdate(
-      { _id: objectId },
-      { $set: body },
-      { returnOriginal: false }
+    return await Contact.findOneAndUpdate(
+      { _id: contactId },
+      { ...body },
+      { new: true }
     );
-    console.log(result);
-    return result;
   }
 }
 
