@@ -45,9 +45,15 @@ const connection = {
   DATABSE_CONNECTION_CLOSE: "Database connection is closed",
 };
 
+const database = {
+  SERVER_RUNNING: "Server running. Use our API on port",
+  SERVER_ERROR: "Server not running. Error message",
+};
+
 module.exports = {
   httpStatusCode,
   signature,
   messages,
   connection,
+  database,
 };

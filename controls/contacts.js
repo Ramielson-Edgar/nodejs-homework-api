@@ -7,6 +7,7 @@ const getListContacts = wrap(async (req, res, next) => {
   try {
     const userId = req.user.id;
     const list = await contactsServices.getContacts(userId, req.query);
+
     return res.status(httpStatusCode.ok).json({
       status: messages.SUCCESS,
       code: httpStatusCode.ok,
@@ -22,12 +23,11 @@ const getListContacts = wrap(async (req, res, next) => {
 const getContactById = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
-
     const response = await contactsServices.getById(
       userId,
       req.params.contactId
     );
+
     if (response) {
       res.status(httpStatusCode.ok).json({
         status: messages.SUCCESS,
@@ -52,6 +52,7 @@ const creat = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const response = await contactsServices.creatContact(userId, req.body);
+
     return res.status(httpStatusCode.CREATED).json({
       status: messages.SUCCESS,
       code: httpStatusCode.CREATED,
@@ -92,24 +93,25 @@ const updateContact = async (req, res, next) => {
 const removeContact = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    return await contactsServices
-      .remove(userId, req.params.contactId)
-      .then((data) => {
-        if (data) {
-          res.status(httpStatusCode.ok).json({
-            status: messages.SUCCESS,
-            code: httpStatusCode.ok,
-            message: messages.SUCCESS_DELETE,
-            data: { data },
-          });
-        } else {
-          return res.status(httpStatusCode.NOT_FOUND).json({
-            status: messages.ERROR,
-            code: httpStatusCode.NOT_FOUND,
-            message: messages.NOT_FOUND,
-          });
-        }
+    const response = await contactsServices.remove(
+      userId,
+      req.params.contactId
+    );
+
+    if (response) {
+      res.status(httpStatusCode.ok).json({
+        status: messages.SUCCESS,
+        code: httpStatusCode.ok,
+        message: messages.SUCCESS_DELETE,
+        data: { response },
       });
+    } else {
+      return res.status(httpStatusCode.NOT_FOUND).json({
+        status: messages.ERROR,
+        code: httpStatusCode.NOT_FOUND,
+        message: messages.NOT_FOUND,
+      });
+    }
   } catch (e) {
     next(e);
   }
@@ -128,15 +130,15 @@ const updateStatusContact = async (req, res, next) => {
       return res.status(httpStatusCode.ok).json({
         status: messages.SUCCESS,
         code: httpStatusCode.ok,
-        data: { ...response },
-      });
-    } else {
-      res.status(httpStatusCode.BAD_REQUEST).json({
-        status: messages.ERROR,
-        code: httpStatusCode.BAD_REQUEST,
-        message: messages.NOT_FOUND,
+        data: { response },
       });
     }
+
+    return res.status(httpStatusCode.BAD_REQUEST).json({
+      status: messages.ERROR,
+      code: httpStatusCode.BAD_REQUEST,
+      message: messages.NOT_FOUND,
+    });
   } catch (e) {
     next(e);
   }

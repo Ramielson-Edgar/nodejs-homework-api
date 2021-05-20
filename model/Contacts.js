@@ -57,9 +57,9 @@ class ContactsRepositories {
     );
   }
 
-  async updateStatusContact(contactId, body) {
+  async updateStatusContact(userId, contactId, body) {
     return await Contact.findOneAndUpdate(
-      { _id: contactId },
+      { _id: contactId, owner: userId },
       { ...body },
       { new: true }
     );
