@@ -15,20 +15,25 @@ class ContactsServices {
     return await this.repositories.contacts.getContactById(contactId);
   }
 
-  async creatContact(name, email, phone) {
-    return await this.repositories.contacts.addContact(name, email, phone);
-  }
+
+  async creatContact(body) {
+    return await this.repositories.contacts.addContact(body);
+
+ 
 
   async remove(contactId) {
     return await this.repositories.contacts.removeContact(contactId);
   }
 
-  async update(contactId, name, email, phone) {
-    return await this.repositories.contacts.updateContact(
+
+  async update(contactId, body) {
+    return await this.repositories.contacts.updateContact(contactId, body);
+  }
+
+  async updateStatus(contactId, body) {
+    return await this.repositories.contacts.updateStatusContact(
       contactId,
-      name,
-      email,
-      phone
+      body
     );
   }
 }

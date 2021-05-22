@@ -11,10 +11,12 @@
   "dependencies": {
     "cors": "2.8.5",
     "cross-env": "7.0.3",
+    "dotenv": "^8.2.0",
     "eslint-config-prettier": "^8.2.0",
     "eslint-plugin-json": "^2.1.2",
     "express": "4.17.1",
     "joi": "^17.4.0",
+    "mongoose": "^5.12.7",
     "morgan": "1.10.0",
     "shortid": "^2.2.16"
   },
