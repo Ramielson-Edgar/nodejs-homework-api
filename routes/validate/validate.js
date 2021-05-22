@@ -9,7 +9,7 @@ const schemaCreatContacts = Joi.object({
     .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
-  favorite: Joi.boolean().optional(),
+  favorite: Joi.boolean().optional(), 
 });
 
 const schemaUpdateContacts = Joi.object({
@@ -20,6 +20,7 @@ const schemaUpdateContacts = Joi.object({
     .max(20)
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .optional(),
+ 
   favorite: Joi.boolean().optional(),
 });
 
@@ -48,7 +49,9 @@ module.exports.validateCreat = (req, res, next) => {
 module.exports.validateUpdate = (req, res, next) => {
   return validate(schemaUpdateContacts, req.body, next);
 };
+ 
 
 module.exports.validateUpdateStatus = (req, res, next) => {
   return validate(schemaUpdateContactsStatus, req.body, next);
 };
+ 

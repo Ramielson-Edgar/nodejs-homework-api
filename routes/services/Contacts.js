@@ -15,13 +15,16 @@ class ContactsServices {
     return await this.repositories.contacts.getContactById(contactId);
   }
 
+
   async creatContact(body) {
     return await this.repositories.contacts.addContact(body);
-  }
+
+ 
 
   async remove(contactId) {
     return await this.repositories.contacts.removeContact(contactId);
   }
+
 
   async update(contactId, body) {
     return await this.repositories.contacts.updateContact(contactId, body);
