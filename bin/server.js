@@ -2,7 +2,7 @@ const app = require("../Server");
 const dataBase = require("../model/db");
 const { database } = require("../helpers/constants");
 
-const PORT = process.env.PORT || 4040;
+const PORT = process.env.PORT || 3000;
 
 dataBase
   .then(() => {
