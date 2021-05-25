@@ -1,5 +1,9 @@
+const Jimp = require("jimp");
+const fs = require("fs/promises");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 require("dotenv").config();
+
 const { httpStatusCode, messages } = require("../helpers/constants");
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
@@ -60,6 +64,7 @@ const registration = async (req, res, next) => {
         id: user.id,
         email: user.email,
         password: user.password,
+        avatar: user.avatarUrl,
       },
     });
   } catch (e) {
@@ -114,10 +119,52 @@ const updateUserSubscription = async (req, res, next) => {
   }
 };
 
+const updateAvatar = async (req, res, next) => {
+  const { id } = req.user;
+  const avatarUrl = await saveAvatar(req);
+  await userRepositories.updateAvatar(id, avatarUrl);
+
+  return res.status(httpStatusCode.ok).json({
+    status: httpStatusCode.ok,
+    message: messages.SUCCESS_UPDATE,
+    data: { avatarUrl },
+  });
+};
+const saveAvatar = async (req) => {
+  const FOLDER_AVATARS = process.env.FOLDER_AVATARS;
+  const pathFile = req.file.path;
+
+  const newNameAvatar = `${Date.now().toString()}-${req.file.originalname}`;
+  const img = await Jimp.read(pathFile);
+  await img
+    .autocrop()
+    .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
+    .writeAsync(pathFile);
+
+  try {
+    await fs.rename(
+      pathFile,
+      path.join(process.cwd(), "public", FOLDER_AVATARS, newNameAvatar)
+    );
+  } catch (e) {
+    await fs.unlink(pathFile);
+    console.log(e.message);
+  }
+
+  const oldAvatar = req.user.avatarUrl;
+
+  if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
+    return await fs.unlink(path.join(process.cwd(), "public", oldAvatar));
+  }
+
+  return path.join(FOLDER_AVATARS, newNameAvatar).replace("\\", "/");
+};
+
 module.exports = {
   registration,
   login,
   logout,
   current,
   updateUserSubscription,
+  updateAvatar,
 };

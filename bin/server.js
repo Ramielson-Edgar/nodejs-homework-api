@@ -1,4 +1,4 @@
-const app = require("../Server");
+const app = require("../app");
 const dataBase = require("../model/db");
 const { database } = require("../helpers/constants");
 
