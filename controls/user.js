@@ -1,10 +1,9 @@
-const Jimp = require("jimp");
+const path = require("path");
 const fs = require("fs/promises");
 const jwt = require("jsonwebtoken");
-const path = require("path");
+const Jimp = require("jimp");
 require("dotenv").config();
-
-const { httpStatusCode, messages } = require("../helpers/constants");
+const { httpStatusCode, messages, folder } = require("../helpers/constants");
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -122,42 +121,44 @@ const updateUserSubscription = async (req, res, next) => {
 const updateAvatar = async (req, res, next) => {
   const { id } = req.user;
   const avatarUrl = await saveAvatar(req);
-  await userRepositories.updateAvatar(id, avatarUrl);
+  await userRepositories.updateUserAvatar(id, avatarUrl);
 
   return res.status(httpStatusCode.ok).json({
-    status: httpStatusCode.ok,
+    status: messages.SUCCESS,
+    code: httpStatusCode.ok,
     message: messages.SUCCESS_UPDATE,
     data: { avatarUrl },
   });
 };
-const saveAvatar = async (req) => {
-  const FOLDER_AVATARS = process.env.FOLDER_AVATARS;
-  const pathFile = req.file.path;
 
-  const newNameAvatar = `${Date.now().toString()}-${req.file.originalname}`;
-  const img = await Jimp.read(pathFile);
+const saveAvatar = async (req) => {
+  const FOLDER_AVATAR = process.env.FOLDER_AVATAR;
+  const pathfile = req.file.path;
+
+  const newNname = `${Date.now().toString()}-${req.file.originalname}`;
+  const img = await Jimp.read(pathfile);
   await img
     .autocrop()
     .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
-    .writeAsync(pathFile);
+    .writeAsync(pathfile);
 
   try {
     await fs.rename(
-      pathFile,
-      path.join(process.cwd(), "public", FOLDER_AVATARS, newNameAvatar)
+      pathfile,
+      path.join(process.cwd(), folder.PUBLIC, FOLDER_AVATAR, newNname)
     );
   } catch (e) {
-    await fs.unlink(pathFile);
-    console.log(e.message);
+    await fs.unlink(pathfile);
+    return console.log(e.message);
   }
 
-  const oldAvatar = req.user.avatarUrl;
+  const oldAvatarUrl = req.user.avatarUrl;
 
-  if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
-    return await fs.unlink(path.join(process.cwd(), "public", oldAvatar));
+  if (String(oldAvatarUrl).includes(`${FOLDER_AVATAR}/`)) {
+    await fs.unlink(path.join(process.cwd(), folder.PUBLIC, oldAvatarUrl));
   }
 
-  return path.join(FOLDER_AVATARS, newNameAvatar).replace("\\", "/");
+  return path.join(FOLDER_AVATAR, newNname).replace("\\", "/");
 };
 
 module.exports = {
@@ -167,4 +168,5 @@ module.exports = {
   current,
   updateUserSubscription,
   updateAvatar,
+  saveAvatar,
 };

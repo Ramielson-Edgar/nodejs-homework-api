@@ -3,7 +3,7 @@ const { httpStatusCode, messages } = require("../helpers/constants");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 2,
+  max: 10,
   handler: (req, res, next) => {
     res.status(httpStatusCode.TOO_MANY_REQUESTS).json({
       status: messages.ERROR,

@@ -26,12 +26,8 @@ class UserRepositories {
     );
   }
 
-  async updateAvatar(contactId, avatarUrl) {
-    return await User.findByIdAndUpdate(
-      { _id: contactId },
-      { avatarUrl },
-      { new: true }
-    );
+  async updateUserAvatar(contactId, avatarUrl) {
+    return await User.findByIdAndUpdate({ _id: contactId }, { avatarUrl });
   }
 }
 
