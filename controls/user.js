@@ -4,7 +4,11 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 require("dotenv").config();
 
-const { httpStatusCode, messages } = require("../helpers/constants");
+const {
+  httpStatusCode,
+  messages,
+  staticFolder,
+} = require("../helpers/constants");
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -144,7 +148,12 @@ const saveAvatar = async (req) => {
   try {
     await fs.rename(
       pathFile,
-      path.join(process.cwd(), "public", FOLDER_AVATARS, newNameAvatar)
+      path.join(
+        process.cwd(),
+        staticFolder.PUBLIC,
+        FOLDER_AVATARS,
+        newNameAvatar
+      )
     );
   } catch (e) {
     await fs.unlink(pathFile);
@@ -155,7 +164,7 @@ const saveAvatar = async (req) => {
 
   if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
     return await fs.unlink(
-      path.join(process.cwd(), "public", FOLDER_AVATARS, oldAvatar)
+      path.join(process.cwd(), staticFolder.PUBLIC, FOLDER_AVATARS, oldAvatar)
     );
   }
 
