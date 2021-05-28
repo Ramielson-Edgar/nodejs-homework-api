@@ -147,15 +147,18 @@ const saveAvatar = async (req) => {
       pathfile,
       path.join(process.cwd(), folder.PUBLIC, FOLDER_AVATAR, newNname)
     );
+    return req.user.avatarUrl;
   } catch (e) {
     await fs.unlink(pathfile);
-    return console.log(e.message);
+    console.log(e.message);
   }
 
   const oldAvatarUrl = req.user.avatarUrl;
 
   if (String(oldAvatarUrl).includes(`${FOLDER_AVATAR}/`)) {
-    await fs.unlink(path.join(process.cwd(), folder.PUBLIC, oldAvatarUrl));
+    return await fs.unlink(
+      path.join(process.cwd(), folder.PUBLIC, oldAvatarUrl)
+    );
   }
 
   return path.join(FOLDER_AVATAR, newNname).replace("\\", "/");
