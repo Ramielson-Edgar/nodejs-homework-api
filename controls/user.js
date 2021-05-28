@@ -134,17 +134,17 @@ const updateAvatar = async (req, res, next) => {
     data: { avatarUrl },
   });
 };
+
 const saveAvatar = async (req) => {
   const FOLDER_AVATARS = process.env.FOLDER_AVATARS;
-  const pathFile = req.file.path;
 
-  const newNameAvatar = `${Date.now().toString()}-${req.file.originalname}`;
+  const pathFile = req.file.path;
+  const newAvatarName = `${Date.now().toString()}-${req.file.originalname}`;
   const img = await Jimp.read(pathFile);
   await img
     .autocrop()
     .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
-    .writeAsync(pathFile);
-
+    .writeAsync(String(pathFile));
   try {
     await fs.rename(
       pathFile,
@@ -152,23 +152,24 @@ const saveAvatar = async (req) => {
         process.cwd(),
         staticFolder.PUBLIC,
         FOLDER_AVATARS,
-        newNameAvatar
+        newAvatarName
       )
     );
-  } catch (e) {
-    await fs.unlink(pathFile);
-    console.log(e.message);
+  } catch (err) {
+    console.log(err.message);
   }
 
   const oldAvatar = req.user.avatarUrl;
 
   if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
-    return await fs.unlink(
-      path.join(process.cwd(), staticFolder.PUBLIC, FOLDER_AVATARS, oldAvatar)
-    );
+    try {
+      await fs.unlink(path.join(process.cwd(), staticFolder.PUBLIC, oldAvatar));
+    } catch (e) {
+      console.log(e.meesage);
+    }
   }
 
-  return path.join(FOLDER_AVATARS, newNameAvatar).replace("\\", "/");
+  return path.join(FOLDER_AVATARS, newAvatarName).replace("\\", "/");
 };
 
 module.exports = {
