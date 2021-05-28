@@ -154,7 +154,9 @@ const saveAvatar = async (req) => {
   const oldAvatar = req.user.avatarUrl;
 
   if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
-    return await fs.unlink(path.join(process.cwd(), "public", oldAvatar));
+    return await fs.unlink(
+      path.join(process.cwd(), "public", FOLDER_AVATARS, oldAvatar)
+    );
   }
 
   return path.join(FOLDER_AVATARS, newNameAvatar).replace("\\", "/");
