@@ -25,10 +25,6 @@ class UserRepositories {
       { new: true }
     );
   }
-
-  async updateUserAvatar(contactId, avatarUrl) {
-    return await User.findByIdAndUpdate({ _id: contactId }, { avatarUrl });
-  }
 }
 
 module.exports = UserRepositories;

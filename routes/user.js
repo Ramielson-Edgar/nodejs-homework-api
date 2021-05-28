@@ -8,7 +8,6 @@ const {
   validateLogin,
 } = require("./validate/user");
 const guard = require("../helpers/guard");
-const uploadAvatar = require("../helpers/upload-avatar");
 const limiter = require("../helpers/Limit");
 
 router.post("/signup", limiter, validateCreat, crtl.registration);
@@ -20,13 +19,6 @@ router.patch(
   guard,
   validateUpdateSubscription,
   crtl.updateUserSubscription
-);
-
-router.patch(
-  "/avatars",
-  guard,
-  uploadAvatar.single("avatar"),
-  crtl.updateAvatar
 );
 
 module.exports = router;

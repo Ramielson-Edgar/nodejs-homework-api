@@ -1,9 +1,6 @@
-const path = require("path");
-const fs = require("fs/promises");
 const jwt = require("jsonwebtoken");
-const Jimp = require("jimp");
 require("dotenv").config();
-const { httpStatusCode, messages, folder } = require("../helpers/constants");
+const { httpStatusCode, messages } = require("../helpers/constants");
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -118,58 +115,10 @@ const updateUserSubscription = async (req, res, next) => {
   }
 };
 
-const updateAvatar = async (req, res, next) => {
-  const { id } = req.user;
-  const avatarUrl = await saveAvatar(req);
-  await userRepositories.updateUserAvatar(id, avatarUrl);
-
-  return res.status(httpStatusCode.ok).json({
-    status: messages.SUCCESS,
-    code: httpStatusCode.ok,
-    message: messages.SUCCESS_UPDATE,
-    data: { avatarUrl },
-  });
-};
-
-const saveAvatar = async (req) => {
-  const FOLDER_AVATAR = process.env.FOLDER_AVATAR;
-  const pathfile = req.file.path;
-
-  const newNname = `${Date.now().toString()}-${req.file.originalname}`;
-  const img = await Jimp.read(pathfile);
-  await img
-    .autocrop()
-    .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
-    .writeAsync(pathfile);
-
-  try {
-    await fs.rename(
-      pathfile,
-      path.join(process.cwd(), folder.PUBLIC, FOLDER_AVATAR, newNname)
-    );
-    return req.user.avatarUrl;
-  } catch (e) {
-    await fs.unlink(pathfile);
-    console.log(e.message);
-  }
-
-  const oldAvatarUrl = req.user.avatarUrl;
-
-  if (String(oldAvatarUrl).includes(`${FOLDER_AVATAR}/`)) {
-    return await fs.unlink(
-      path.join(process.cwd(), folder.PUBLIC, oldAvatarUrl)
-    );
-  }
-
-  return path.join(FOLDER_AVATAR, newNname).replace("\\", "/");
-};
-
 module.exports = {
   registration,
   login,
   logout,
   current,
   updateUserSubscription,
-  updateAvatar,
-  saveAvatar,
 };
