@@ -1,7 +1,7 @@
-const Jimp = require("jimp");
-const fs = require("fs/promises");
 const jwt = require("jsonwebtoken");
+const fs = require("fs/promises");
 const path = require("path");
+const jimp = require("jimp");
 require("dotenv").config();
 
 const {
@@ -9,6 +9,7 @@ const {
   messages,
   staticFolder,
 } = require("../helpers/constants");
+
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -140,10 +141,10 @@ const saveAvatar = async (req) => {
 
   const pathFile = req.file.path;
   const newAvatarName = `${Date.now().toString()}-${req.file.originalname}`;
-  const img = await Jimp.read(pathFile);
+  const img = await jimp.read(pathFile);
   await img
     .autocrop()
-    .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
+    .cover(250, 250, jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(String(pathFile));
   try {
     await fs.rename(
