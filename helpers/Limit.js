@@ -1,16 +1,20 @@
 const rateLimit = require("express-rate-limit");
 const { httpStatusCode, messages } = require("../helpers/constants");
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  handler: (req, res, next) => {
-    res.status(httpStatusCode.TOO_MANY_REQUESTS).json({
-      status: messages.ERROR,
-      code: httpStatusCode.TOO_MANY_REQUESTS,
-      message: messages.TOO_MANY_REQUEST,
-    });
-  },
-});
+const errorRepeateLimit = (value, messageError) => {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: value,
+    handler: (req, res, next) => {
+      res.status(httpStatusCode.TOO_MANY_REQUESTS).json({
+        status: messages.ERROR,
+        code: httpStatusCode.TOO_MANY_REQUESTS,
+        message: messageError,
+      });
+    },
+  });
 
-module.exports = limiter;
+  return limiter;
+};
+
+module.exports = errorRepeateLimit;

@@ -5,17 +5,18 @@ const boolParser = require("express-query-boolean");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 
-const app = express();
-
 const { httpStatusCode, messages } = require("./helpers/constants");
 
 const userRouter = require("./routes/user");
 const contactsRouter = require("./routes/contacts");
 
+const app = express();
+
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(helmet());
 app.use(logger(formatsLogger));
+app.use(express.static("public"));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -42,7 +43,7 @@ app.use(
 app.use(express.json());
 app.use(boolParser());
 
-app.use("/users", userRouter);
+app.use("/api/users", userRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((req, res, next) => {
