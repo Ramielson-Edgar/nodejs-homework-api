@@ -1,7 +1,7 @@
-const Jimp = require("jimp");
-const fs = require("fs/promises");
 const jwt = require("jsonwebtoken");
+const fs = require("fs/promises");
 const path = require("path");
+const jimp = require("jimp");
 require("dotenv").config();
 
 const {
@@ -9,9 +9,9 @@ const {
   messages,
   staticFolder,
 } = require("../helpers/constants");
+
 const { UserRepositories } = require("../model");
 const userRepositories = new UserRepositories();
-const EmailService = require("../services/email");
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const login = async (req, res, next) => {
@@ -20,13 +20,11 @@ const login = async (req, res, next) => {
     const user = await userRepositories.findByEmail(email);
     const isValidPassword = await user?.validPassword(password);
 
-    if (!user || !isValidPassword || !user.verify) {
-      return res.status(httpStatusCode.UNAUTHORIZATION).json({
+    if (!user || !isValidPassword) {
+      res.status(httpStatusCode.UNAUTHORIZATION).json({
         status: messages.ERROR,
         code: httpStatusCode.UNAUTHORIZATION,
-        messages: !user.verify
-          ? messages.NOT_VERIFICATED
-          : messages.EMAIL_OR_PASSWORD_WRONG,
+        messages: messages.EMAIL_OR_PASSWORD_WRONG,
       });
     }
 
@@ -42,7 +40,6 @@ const login = async (req, res, next) => {
         user: {
           email: user.email,
           subscription: user.subscription,
-          avatar: user.avatarUrl,
         },
       },
     });
@@ -52,9 +49,10 @@ const login = async (req, res, next) => {
 };
 
 const registration = async (req, res, next) => {
-  const user = await userRepositories.findByEmail(req.body.email);
+  const { email } = req.body;
+  const newUser = await userRepositories.findByEmail(email);
 
-  if (user) {
+  if (newUser) {
     return res.status(httpStatusCode.CONFLICT).json({
       status: messages.CONFLICT,
       message: messages.EMAIL_IN_USE,
@@ -62,26 +60,16 @@ const registration = async (req, res, next) => {
   }
 
   try {
-    const newUser = await userRepositories.create(req.body);
-    const { id, email, password, avatarUrl, verifyTokenEmail, subscription } =
-      newUser;
-
-    try {
-      const emailService = new EmailService(process.env.NODE_ENV);
-      return await emailService.sendVerifyEmail(verifyTokenEmail, email);
-    } catch (e) {
-      console.log(e.message);
-    }
+    const user = await userRepositories.create(req.body);
 
     return res.status(httpStatusCode.CREATED).json({
       status: messages.SUCCESS_CREATED,
       code: httpStatusCode.CREATED,
       data: {
-        id,
-        email,
-        password,
-        avatarUrl,
-        subscription,
+        id: user.id,
+        email: user.email,
+        password: user.password,
+        avatar: user.avatarUrl,
       },
     });
   } catch (e) {
@@ -147,87 +135,42 @@ const updateAvatar = async (req, res, next) => {
     data: { avatarUrl },
   });
 };
+
 const saveAvatar = async (req) => {
   const FOLDER_AVATARS = process.env.FOLDER_AVATARS;
-  const pathFile = req.file.path;
 
-  const newNameAvatar = `${Date.now().toString()}-${req.file.originalname}`;
-  const img = await Jimp.read(pathFile);
+  const pathFile = req.file.path;
+  const newAvatarName = `${Date.now().toString()}-${req.file.originalname}`;
+  const img = await jimp.read(pathFile);
   await img
     .autocrop()
-    .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
+    .cover(250, 250, jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(String(pathFile));
-
-  await fs.rename(
-    pathFile,
-    path.join(process.cwd(), staticFolder.PUBLIC, FOLDER_AVATARS, newNameAvatar)
-  );
+  try {
+    await fs.rename(
+      pathFile,
+      path.join(
+        process.cwd(),
+        staticFolder.PUBLIC,
+        FOLDER_AVATARS,
+        newAvatarName
+      )
+    );
+  } catch (err) {
+    console.log(err.message);
+  }
 
   const oldAvatar = req.user.avatarUrl;
 
   if (String(oldAvatar).includes(`${FOLDER_AVATARS}/`)) {
     try {
-      return await fs.unlink(
-        path.join(process.cwd(), staticFolder.PUBLIC, oldAvatar)
-      );
+      await fs.unlink(path.join(process.cwd(), staticFolder.PUBLIC, oldAvatar));
     } catch (e) {
-      console.log(e.message);
+      console.log(e.meesage);
     }
   }
-  return path.join(FOLDER_AVATARS, newNameAvatar).replace("\\", "/");
-};
 
-const verify = async (req, res, next) => {
-  try {
-    const user = await userRepositories.findByVerifyTokenEmail(
-      req.params.token
-    );
-
-    if (user) {
-      await userRepositories.updateVerifyToken(user.id, true, null);
-
-      return res.status(httpStatusCode.ok).json({
-        status: messages.SUCCESS,
-        code: httpStatusCode.ok,
-        message: messages.VERIFICATION_SUCCESS,
-      });
-    }
-
-    return res.status(httpStatusCode.BAD_REQUEST).json({
-      status: messages.ERROR,
-      code: httpStatusCode.BAD_REQUEST,
-      messages: messages.NOT_FOUND,
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
-const repeatEmailVerify = async (req, res, next) => {
-  try {
-    const user = await userRepositories.findByEmail(req.body.email);
-
-    if (user) {
-      const { verifyTokenEmail, email } = user;
-      const emailService = new EmailService(process.env.NODE_ENV);
-      await emailService.sendVerifyEmail(verifyTokenEmail, email);
-
-      return res.status(httpStatusCode.ok).json({
-        status: messages.SUCCESS,
-        code: httpStatusCode.ok,
-        message: messages.VERIFICATION_EMAIL_SENT,
-        data: { email: email },
-      });
-    }
-
-    return res.status(httpStatusCode.NOT_FOUND).json({
-      status: messages.ERROR,
-      code: httpStatusCode.NOT_FOUND,
-      messages: messages.NOT_FOUND,
-    });
-  } catch (e) {
-    next(e);
-  }
+  return path.join(FOLDER_AVATARS, newAvatarName).replace("\\", "/");
 };
 
 module.exports = {
@@ -237,6 +180,4 @@ module.exports = {
   current,
   updateUserSubscription,
   updateAvatar,
-  verify,
-  repeatEmailVerify,
 };

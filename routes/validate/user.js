@@ -8,11 +8,8 @@ const {
 const schemaCreatUser = Joi.object({
   email: Joi.string()
     .min(5)
-    .max(70)
-    .email({
-      minDomainSegments: 2,
-      tlds: { allow: ["com", "net"] },
-    })
+    .max(20)
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
 
   password: Joi.string().required(),
@@ -30,11 +27,8 @@ const schemaUpdateSubcsriptionUser = Joi.object({
 const schemaLoginUser = Joi.object({
   email: Joi.string()
     .min(5)
-    .max(70)
-    .email({
-      minDomainSegments: 2,
-      tlds: { allow: ["com", "net"] },
-    })
+    .max(20)
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
 
   password: Joi.string().required(),

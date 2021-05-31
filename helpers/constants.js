@@ -35,11 +35,6 @@ const messages = {
   PASSWORD_IS_REQUIRE: "Password is required",
   EMAIL_IS_REQUIRE: "Email is required",
   TOO_MANY_REQUEST: "Too many requests, please try again",
-  VERIFICATION_TOKEN_NOT_VALID: "Verification token not valid",
-  VERIFICATION_SUCCESS: "Verification successful",
-  VERIFICATION_EMAIL_SENT: "Verification email sent",
-  NOT_VERIFICATED: "User not found",
-  VERIFICATION_HAS_ALREADY_BEEN_PASSED: "Verification has already been passed",
 };
 
 const connection = {
@@ -50,7 +45,6 @@ const connection = {
   MONGOOSE_ERROR: "Mongoose error",
   MONGOOSE_DISCONNECTED: "Mongoose is disconnected",
   DATABSE_CONNECTION_CLOSE: "Database connection is closed",
-  MISSING_REQUIRED_FIELD_EMAIL: "missing required field email",
 };
 
 const database = {
