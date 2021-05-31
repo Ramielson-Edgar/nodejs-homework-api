@@ -5,9 +5,11 @@ module.exports = {
     node: true,
   },
   extends: ["standard", "plugin:json/recommended", "prettier"],
+
   parserOptions: {
     ecmaVersion: 12,
   },
+  parser: "babel-eslint",
   rules: {
     "comma-dangle": "off",
     "space-before-function-paren": "off",

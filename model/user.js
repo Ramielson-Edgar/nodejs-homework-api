@@ -2,7 +2,7 @@ const User = require("./Shemas/user");
 
 class UserRepositories {
   async findById(contactId) {
-    return await User.findOne({ _id: contactId });
+    return await User.findById({ _id: contactId });
   }
 
   async findByEmail(email) {
@@ -24,6 +24,25 @@ class UserRepositories {
       { ...subscription },
       { new: true }
     );
+  }
+
+  async updateAvatar(contactId, avatarUrl) {
+    return await User.findByIdAndUpdate(
+      { _id: contactId },
+      { avatarUrl },
+      { new: true }
+    );
+  }
+
+  async updateVerifyToken(contactId, verify, verifyToken) {
+    return await User.findByIdAndUpdate(
+      { _id: contactId },
+      { verify, verifyTokenEmail: verifyToken }
+    );
+  }
+
+  async findByVerifyTokenEmail(token) {
+    return await User.findOneAndUpdate({ verifyTokenEmail: token });
   }
 }
 

@@ -1,6 +1,8 @@
 const { Schema, model } = require("mongoose");
 const { signature, messages } = require("../../helpers/constants");
 const { genSalt, hash, compare } = require("bcryptjs");
+const gravatar = require("gravatar");
+const { nanoid } = require("nanoid");
 
 const userShema = new Schema(
   {
@@ -25,6 +27,22 @@ const userShema = new Schema(
     token: {
       type: String,
       default: null,
+    },
+    avatarUrl: {
+      type: String,
+      default: function () {
+        return gravatar.url(this.email, { s: "250" }, true);
+      },
+    },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyTokenEmail: {
+      type: String,
+      require: true,
+      default: nanoid(),
+      required: [true, "Verify token is required"],
     },
   },
   {
