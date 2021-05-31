@@ -52,7 +52,7 @@ const database = {
   SERVER_ERROR: "Server not running. Error message",
 };
 
-const folder = {
+const staticFolder = {
   PUBLIC: "public",
 };
 
@@ -62,5 +62,5 @@ module.exports = {
   messages,
   connection,
   database,
-  folder,
+  staticFolder,
 };
